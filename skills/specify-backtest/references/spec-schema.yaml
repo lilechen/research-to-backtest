@@ -1,0 +1,81 @@
+# 可回测交易系统规格(框架无关)
+# 由 specify-backtest skill 生成。每个字段要么填明确谓词,要么 null + 在操作化日志记缺口。
+
+system:
+  name: <系统名>
+  source: <来源 .md 文件>
+  source_type: book / paper
+  timeframe: <主周期,如 weekly / daily>
+
+universe:
+  type: <市场类型,如 us_equities / futures / fx>
+  filter:
+    - <筛选谓词,如 avg_volume_4wk > 15000>
+  exclude:
+    - <排除谓词>
+
+indicators:
+  # 每个指标:name + type + params。type 用通用算子。
+  # 算子:SMA / EMA / slope / rolling_max / rolling_min / ratio / ATR / stddev / cross_above / cross_below
+  - name: <指标名>
+    type: <算子>
+    params: { ... }
+  # 例:
+  # - name: MA30w
+  #   type: SMA
+  #   params: {field: close, window: 30}
+  # - name: MA30w_slope
+  #   type: slope
+  #   params: {of: MA30w, window: 4}
+  # - name: RS
+  #   type: ratio
+  #   params: {of: close, to: SPX_close}
+
+regime:
+  # 若系统有阶段/状态机,在此表达。否则删此节。
+  states: [<状态列表>]
+  transitions:
+    - to: <状态>
+      when: <谓词>
+
+entry:
+  when: <入场谓词>
+  and:
+    - <额外确认谓词>
+
+exit:
+  stop_loss:
+    type: <fixed / trailing / none>
+    rule: <谓词或公式>
+  take_profit:
+    rule: <谓词或公式,或 null>
+  trailing:
+    raise_trigger: <谓词>
+    rule: <公式>
+  time_stop:
+    rule: <谓词,或 null>
+  hard_exit: <硬性出场谓词,如 regime == 4>
+
+sizing:
+  method: <equal_dollar / risk_pct / atr_based / volatility_target>
+  params: { ... }
+  # 例 risk_pct: {risk: 0.01}
+  # 例 equal_dollar: {n_positions: 15}
+  scale_in: <加仓谓词,或 null>
+  scale_out: <减仓谓词,或 null>
+
+portfolio:
+  max_positions: <数>
+  min_positions: <数>
+  max_per_sector: <数,或 null>
+  correlation_cap: <数,或 null>
+  drawdown_circuit_breaker: <回撤阈值,如 0.20,或 null>
+
+execution:
+  fill: <next_open / next_close / vwap / signal_close>
+  slippage_bps: <数>
+  commission_bps: <数>
+
+assumptions:
+  # 汇总所有保真度风险点,与操作化日志对应
+  - "<风险描述>"

@@ -1,0 +1,82 @@
+# Weinstein 阶段分析系统 - 可回测规格(框架无关)
+# 由 specify-backtest skill 生成(示例)。配套见 Weinstein.操作化日志.md。
+# 这是"简化版 Weinstein":排除了头肩底/双底/三重确认/趋势线/整数心理等不可计算元素。
+
+system:
+  name: Weinstein-Stage2-Long
+  source: Weinstein.交易系统.md
+  source_type: book
+  timeframe: weekly   # 周五收盘
+
+universe:
+  type: us_equities
+  filter:
+    - avg(volume, 4) > 15000          # 周均量 > 15k(书:薄量股不做)
+  exclude:
+    - otc == true                      # OTC 不能挂止损(代理:排除 OTC)
+
+indicators:
+  - {name: MA30w,       type: SMA,         params: {field: close, window: 30}}
+  - {name: MA30w_slope, type: slope,       params: {of: MA30w, window: 4}}
+  - {name: RS,          type: ratio,       params: {of: close, to: SPX_close}}
+  - {name: RS_slope,    type: slope,       params: {of: RS, window: 4}}
+  - {name: resistance,  type: rolling_max, params: {field: high, window: 26}}
+  - {name: prior_low,   type: rolling_min, params: {field: low, window: 4}}
+  - {name: vol_avg_4,   type: SMA,         params: {field: volume, window: 4}}
+
+regime:
+  states: [1, 2, 3, 4]
+  transitions:
+    - {to: 2, when: close > resistance AND close > MA30w AND MA30w_slope > 0}
+    - {to: 3, when: state == 2 AND abs(MA30w_slope) < 0.001}   # "走平"操作化
+    - {to: 4, when: close < MA30w AND MA30w_slope < 0}
+
+entry:
+  when: regime == 2 AND regime_prev != 2          # 新进入 Stage 2
+  and:
+    - volume > 2 * vol_avg_4                        # 书中明确的 2x 量能
+    - RS > 0                                        # RS 为正
+
+exit:
+  stop_loss:
+    type: trailing
+    rule: min(prior_low, MA30w) * 0.99              # 前低或均线下方略低
+  take_profit:
+    rule: null                                      # 无固定止盈,靠 trailing
+  trailing:
+    raise_trigger: (close - entry_price) / entry_price <= -0.08 AND close >= 0.97 * rolling_max(close, 26)
+                                                    # 回调 ≥8% 且反弹近前高
+    rule: min(prior_low, MA30w) * 0.99
+  time_stop:
+    rule: null
+  hard_exit: regime == 4                            # 进入 Stage 4 硬出
+
+sizing:
+  method: equal_dollar
+  params: {n_positions: 15}
+  scale_in:
+    when: regime == 2 AND volume < 0.5 * vol_avg_4 AND close > MA30w   # 回踩缩量补另一半
+    fraction: 0.5
+  scale_out: null
+
+portfolio:
+  max_positions: 15
+  min_positions: 5
+  max_per_sector: 3                                  # "跨板块分散"代理
+  correlation_cap: null                              # 书中未明确
+  drawdown_circuit_breaker: 0.20                     # 跌 20% 移场外
+
+execution:
+  fill: next_week_open                               # 书用盘中 buy-stop;操作化为周开盘
+  slippage_bps: 10
+  commission_bps: 1
+
+assumptions:
+  - "Mansfield 加权 30 周均线用简单 SMA 近似,信号略滞后(中风险)"
+  - "阻力区用 26 周滚动最高近似,书里阻力是判断性区间(高风险)"
+  - "均线走平用 |slope| < 0.001 近似,阈值是选择(中风险)"
+  - "RS 改善未建模,仅用 RS > 0(中风险)"
+  - "头肩底/双底/三重确认/趋势线/整数心理 排除,不可计算(高风险)"
+  - "投资者/交易者止损差异未建模,统一用投资者 trailing(中风险)"
+  - "盘中 buy-stop 操作化为下周开盘成交,有执行差(中风险)"
+  - "组合相关性上限书中未明确,用 max_per_sector=3 代理(推断)"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "转可回测规格"
+  short_description: "把人读策略转成可回测 YAML 规格 + 操作化日志"
+  default_prompt: "使用 $specify-backtest 把以下策略转成可回测规格。策略: <路径>."

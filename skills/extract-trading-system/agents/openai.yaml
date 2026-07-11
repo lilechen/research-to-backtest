@@ -1,0 +1,4 @@
+interface:
+  display_name: "抽取交易系统"
+  short_description: "从交易书/paper 的 PDF 抽取一个人可执行的交易系统"
+  default_prompt: "使用 $extract-trading-system 从以下 PDF 抽取交易系统。PDF: <路径>. 类型: book/paper."
