@@ -121,7 +121,7 @@ $specify-backtest
 | Folder | Document | Type | Demonstrates |
 |---|---|---|---|
 | [`Weinstein/`](examples/Weinstein/) | Stan Weinstein, *Secrets for Profiting in Bull and Bear Markets* | book | **Full three-stage pipeline** — stage analysis + visual judgment + chart patterns + spec YAML + operationalization log |
-| [`Clenow/`](examples/Clenow/) | Andreas F. Clenow, *Following the Trend* | book | **Stage 1 style contrast** — fully quantitative CTA trend-following, with 4-档 risk levels, 30-year sector attribution, 2002-2021 year-by-year |
+| [`Clenow/`](examples/Clenow/) | Andreas F. Clenow, *Following the Trend* | book | **Full three-stage pipeline** — fully quantitative CTA trend-following, with 4-档 risk levels, 30-year sector attribution, 2002-2021 year-by-year |
 
 When extracting a new document, drop its artifacts into `examples/<book-name>/`.
 
@@ -159,7 +159,7 @@ research-to-backtest/
 │   └── run-backtest/                   Stage 3: spec → backtest (TBD)
 ├── examples/
 │   ├── Weinstein/                      (3 files: trading-system + spec + log)
-│   └── Clenow/                         (1 file: trading-system)
+│   └── Clenow/                         (3 files: trading-system + spec + log)
 ├── README.md / README.en.md
 └── LICENSE
 ```

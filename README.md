@@ -121,7 +121,7 @@ $specify-backtest
 | 文件夹 | 文献 | 类型 | 演示 |
 |---|---|---|---|
 | [`Weinstein/`](examples/Weinstein/) | Stan Weinstein《Secrets for Profiting in Bull and Bear Markets》 | book | **完整三阶段管线** —— 阶段分析 + 视觉判据 + 形态工具 + 系统规格 YAML + 操作化日志 |
-| [`Clenow/`](examples/Clenow/) | Andreas F. Clenow《Following the Trend》 | book | **阶段 1 风格对照** —— 全定量 CTA 趋势跟踪,含 4 档风控(7.5/10/15/30bp)、30 年板块归因表、2002-2021 逐年收益 |
+| [`Clenow/`](examples/Clenow/) | Andreas F. Clenow《Following the Trend》 | book | **完整三阶段管线** —— 全定量 CTA 趋势跟踪,含 4 档风控(7.5/10/15/30bp)、30 年板块归因表、2002-2021 逐年收益 |
 
 跑新文献时,在 `examples/<书名>/` 下放对应三份产物(若已跑阶段 2)。
 
@@ -159,7 +159,7 @@ research-to-backtest/
 │   └── run-backtest/                  Stage 3: 规格 → 回测 (TBD)
 ├── examples/
 │   ├── Weinstein/                     (3 份:trading-system + spec + log)
-│   └── Clenow/                        (1 份:trading-system)
+│   └── Clenow/                        (3 份:trading-system + spec + log)
 ├── README.md / README.en.md
 └── LICENSE
 ```

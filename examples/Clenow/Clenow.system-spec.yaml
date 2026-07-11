@@ -1,0 +1,133 @@
+# Clenow 趋势跟踪系统 - 可回测规格(框架无关)
+# 由 specify-backtest skill 生成。配套见 Clenow.operationalization-log.md。
+# 这是「简化版 Clenow 核心策略(Ch.4)」:只编码明确数字和规则;不可编码元素排除 + 记日志。
+# 反趋势(Ch.7)、期限结构(Ch.8)等变体未纳入此 spec(待后续抽取)。
+
+system:
+  name: Clenow-Donchian-MA-Filter
+  source: Clenow.trading-system.md
+  source_type: book
+  timeframe: daily
+  reference: "Ch.4 p.74 核心策略规则清单"
+
+universe:
+  type: futures
+  sectors: [agriculture, non_agricultural, currencies, equities, rates]
+  filter:
+    - 在五大板块中(约 100 个合约,Table 3.2 p.72)
+    - 高流动性(作者 Ch.3 p.51-52:「highly liquid and easily traded」)
+  exclude:
+    - etf(单一 ETF 破坏分散,p.286)
+    - 单股 / 单股期货(「trend following does not work on stocks」,p.285)
+    - 单一合约(单市场策略被明示为「suicidal」,p.49)
+
+indicators:
+  - name: EMA50
+    type: EMA
+    params: {field: close, window: 50}
+  - name: EMA100
+    type: EMA
+    params: {field: close, window: 100}
+  - name: DonchianHigh100
+    type: rolling_max
+    params: {field: close, window: 100}
+  - name: DonchianLow100
+    type: rolling_min
+    params: {field: close, window: 100}
+  - name: DonchianHigh50
+    type: rolling_max
+    params: {field: close, window: 50}
+  - name: DonchianLow50
+    type: rolling_min
+    params: {field: close, window: 50}
+  - name: ATR20
+    type: ATR
+    params: {field: close, window: 20, smoothing: ema}
+
+regime:
+  states: [bullish, bearish]
+  transitions:
+    - to: bullish
+      when: EMA50 > EMA100
+    - to: bearish
+      when: EMA50 < EMA100
+  note: "趋势过滤(Ch.4 p.74);入场必须与 regime 同向"
+
+entry:
+  long:
+    when: close >= DonchianHigh100
+    and:
+      - regime == bullish
+  short:
+    when: close <= DonchianLow100
+    and:
+      - regime == bearish
+  always_take: true  # 必须接每一个信号(无过滤器),Ch.4 + p.182, 198
+
+exit:
+  long:
+    when: (close <= DonchianLow50) OR (regime == bearish)
+  short:
+    when: (close >= DonchianHigh50) OR (regime == bullish)
+  stop_loss:
+    type: none
+    rule: null
+    note: "无显式止损单;靠反向 Donchian + 趋势翻转实现出场"
+  take_profit:
+    rule: null
+  trailing:
+    raise_trigger: null
+    rule: null
+  time_stop:
+    rule: null
+  hard_exit: regime_flip
+
+sizing:
+  method: atr_based
+  formula: Contracts = (0.0015 * Equity) / (ATR20 * PointValue)
+  params:
+    risk_factor: 0.0015  # 核心 15bp;可调 0.00075 / 0.001 / 0.0015 / 0.003 (Table 4.5)
+  round: down  # 保守,取整向下(作者明示 Ch.3 p.52)
+  scale_in: null
+  scale_out: null
+  note: "多空对称(同公式),短边作为波动率 dampener(p.116)"
+
+portfolio:
+  max_positions: null  # 由 universe 决定,~22-54(自动)
+  min_positions: null
+  max_per_sector: null  # 无显式上限,靠分散到 5 板块
+  correlation_cap: null  # 无显式约束
+  drawdown_circuit_breaker: null  # 无系统化熔断(作者明示缺陷,p.222)
+  static_risk_per_position: true  # 不随持仓数调整(p.222)
+
+execution:
+  fill: next_open
+  slippage_bps: null  # 已嵌入 volume-based algorithm(总是差执行,Ch.3 p.55)
+  commission:
+    per_contract_usd: 2.5  # $1 佣金 + $1.5 交易所费(Ch.3 p.55)
+    note: "实际随合约价值变化;此处平均化假设"
+  fees:
+    management_annual: 0.015  # 1.5% 按季付每日计提(Ch.4 p.83-84)
+    performance_annual: 0.15  # 15% 按年付
+    high_water_mark: true
+  next_day_execution: true  # 信号次日开盘(防 data snooping,Ch.4 p.61)
+  size_rounding: down
+
+assumptions:
+  # 数据 / 环境 / 哲学层假设
+  - "期初资金 US$10M(作者演示基线,Ch.4 p.131)"
+  - "无资金进出 / 无赎回"
+  - "信号生成后次日开盘按市价执行,总是假设差入场(Ch.4 p.61)"
+  - "持仓周期数月级(典型 1-6 月)"
+  - "数据用 back-adjusted continuous contracts(Ch.2 p.27-30)"
+  - "65% 闲置资金投 G7 政府债,平均 2 年期(Ch.4 p.79-81)"
+  - "回测性能系统性高估实盘(作者明示,Ch.4 p.97-98)"
+
+# 高保真度风险汇总(详见 Clenow.operationalization-log.md)
+fidelity_risks_high:
+  - "gap_through_stop: 日频模型固有风险,无显式 gap protection(Ch.5 p.194)"
+  - "extreme_event_manual_override: 作者个人主张,无阈值(Ch.4 p.175)"
+  - "static_equal_risk: 组合无自适应,54 仓时 risk-on 8.1%(Ch.4 p.222, 255)"
+  - "no_filtering: 无过滤器、无信号筛选(Ch.4 + p.182, 198;这是方法而非缺陷)"
+  - "no_drawdown_circuit_breaker: 无系统化回撤熔断(Ch.4 p.222)"
+  - "no_time_stop / no_trailing_stop: 原方法均不设"
