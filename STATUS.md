@@ -15,7 +15,7 @@
 |---|---|---|---|---|---|
 | Stan Weinstein《Secrets for Profiting in Bull and Bear Markets》 | book | ✅ | ✅ | ⏳ | `examples/Weinstein/` |
 | Andreas F. Clenow《Following the Trend》 | book | ✅ | ✅ | ⏳ | `examples/Clenow/` |
-| William J. O'Neil《How to Make Money in Stocks》 | book | ✅ | ⏳ | ⏳ | `examples/Oneil/` |
+| William J. O'Neil《How to Make Money in Stocks》 | book | ✅ | ✅ | ⏳ | `examples/Oneil/` |
 
 ## 复盘要点(由 skill 自动产出时的已知坑)
 

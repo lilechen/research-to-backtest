@@ -1,0 +1,174 @@
+# O'Neil CAN SLIM 成长股系统 - 可回测规格(框架无关)
+# 由 specify-backtest skill 生成。配套见 Oneil.operationalization-log.md。
+# 这是「操作化版 O'Neil CAN SLIM 核心系统」:只编码明确数字和规则;不可编码元素(图形形态、IBD 专有指标)排除 + 记日志。
+
+system:
+  name: Oneil-CANSLIM
+  source: Oneil.trading-system.md
+  source_type: book
+  timeframe: daily + weekly
+  reference: "CAN SLIM 7 要素 + base pattern + 市场方向前提"
+
+universe:
+  type: us_equities
+  filter:
+    # CAN SLIM 七要素(p.24-25, 194-195)
+    - 当前季度 EPS 增长 >= 0.25
+    - 年度 EPS 增长 >= 0.25 over 3-5 年
+    - 当季 sales 增长 >= 0.25
+    - ROE >= 0.17  # 大赢家常见 30/40/50%+(p.172)
+    - 流动性:日均成交 >= 1_000_000 股(p.173)
+    - 市场 regime == confirmed_uptrend(p.188)  # M 是入场前提
+  exclude:
+    - 低 P/E 价值股、bottom fishing、buy-low-sell-high 路径(p.37, 108, 185)
+    - average_daily_volume <= 400_000(p.165)  # 薄量股
+    - 太知名 / market darling(p.178)
+    - 财报前 1-2 天新进买入(p.101-102)
+
+indicators:
+  # 均线(关键出场线)
+  - name: MA10d
+    type: SMA
+    params: {field: close, window: 10}
+  - name: MA21d
+    type: SMA
+    params: {field: close, window: 21}
+  - name: MA50d
+    type: SMA
+    params: {field: close, window: 50}  # p.46
+  - name: MA10w
+    type: SMA
+    params: {field: close, window: 50}  # 10 周 ≈ 50 交易日;p.46-47, 133
+  - name: MA200d
+    type: SMA
+    params: {field: close, window: 200}  # p.90-91
+  # 量能
+  - name: AvgVol50d
+    type: SMA
+    params: {field: volume, window: 50}
+  - name: UpDownVolRatio
+    type: ratio
+    params: {field: up_volume, to: down_volume}
+  # RS
+  - name: RS_line
+    type: ratio
+    params: {field: close, to: SPX_close}
+  # 基本面(外部数据源)
+  - name: CurrQtrEPSGrowth
+    type: external
+    params: {source: earnings_feed}
+  - name: AnnualEPSGrowth
+    type: external
+    params: {source: earnings_feed}
+  - name: ROE
+    type: external
+    params: {source: fundamentals_feed}
+  # 市场指数(用于 regime)
+  - name: IndexClose
+    type: external
+    params: {source: index_data}
+  - name: IndexVolume
+    type: external
+    params: {source: index_data}
+  # Base pattern 代理(只有 three-weeks-tight 可量化)
+  - name: ThreeWeeksTight
+    type: range_ratio
+    params: {field: close, window: 15, max_range_pct: 0.01}
+
+regime:
+  states: [confirmed_uptrend, uptrend_under_pressure, market_in_correction]
+  transitions:
+    - to: confirmed_uptrend
+      when: "FTD + 4 周内 ≥10-15 只 leader setup 守住突破(p.21, 56, 107)"
+    - to: uptrend_under_pressure
+      when: "distribution_days(4-5w) >= 5-6 或 FTD 失败(p.23, 81)"
+    - to: market_in_correction
+      when: "index 跌破 MA21d + distribution day 堆叠(p.158, 23)"
+    - to: confirmed_uptrend
+      when: "新 FTD 出现 + leader 突破确认(p.21)"
+
+entry:
+  long:
+    when:
+      - regime == confirmed_uptrend
+      - 在 proper base pattern(cup-with-handle / double bottom / flat base / three-weeks-tight / high tight flag / buyable gap-up)
+      - 突破 buy point / pivot
+      - 突破日 volume >= 1.4 * AvgVol50d  # ≥40% above average(p.25, 165, 192)
+      - CAN SLIM 七要素全过(C/A/N/S/L/I/M)
+    and:
+      - 不在财报前 1-2 天(p.101-102)
+      - 不是已知 market darling(p.178)
+  short: null  # 系统不做空,仅 long
+
+exit:
+  stop_loss:
+    type: fixed_pct
+    rule: "close < purchase_price * 0.925"  # -7.5% 中位
+    note: "硬止损 7-8%(p.45, 188);个案有 -4% 到 -6% 提前止损(Brian/Barbara, p.49, 101)"
+  take_profit:
+    rule: "close >= purchase_price * 1.225"  # +22.5% 中位
+    note: "常规锁利 20-25%(p.46);8 周例外覆盖此规则"
+  trailing:
+    raise_trigger: "case-by-case"
+    rules:
+      - "跌破 MA50d + 放量 → 大幅减仓或清仓(p.46)"
+      - "跌破 MA10w + 重成交量 → 清仓(p.133)"
+      - "强势股首次跌破 MA10d(持仓 ≥8 周后)→ 卖出(p.72-73)"
+      - "跌破 MA200d → 清仓(p.90-91)"
+      - "Jim 特殊再入场:跌破 MA50d 当日收回 → 同日买回(p.138-139)"
+  time_stop:
+    rule: "8 周例外:若突破后 2-3 周内涨 20% → 至少持有 8 周(p.46, 71, 181)"
+    note: "无明确 time-stop,只有 8 周持有下限"
+  hard_exit: regime_change_to_correction_or_pressure  # 市场方向改 → 锁利(p.73-75)
+
+sizing:
+  method: equal_position_count
+  initial_position: small  # start small, add if gains(p.55)
+  add_only_when: in_profit  # never average down(p.56)
+  max_positions_personal: 6  # John Mackel(p.91)
+  max_positions_fund: 15  # Kier(p.134)
+  single_position_max_pct: 0.30  # Kier 规则(p.134)
+  initial_exposure_post_ftd_max: 0.20  # Ed Hornstein(p.115-116)
+  scale_in:
+    rule: "持仓浮盈 + 市场仍健康 + 股票仍 leader + 未跌破关键均线(p.55, 174)"
+    examples:
+      - "Dave Whitmer 重大利好日 market order +25% shares(p.68-69)"
+      - "Jeff Apple pyramid 到初始仓位 5 倍+(p.95)"
+  scale_out: null  # 无固定减仓规则
+  cash_position_allowed: true  # 100% 现金合法(p.178)
+
+portfolio:
+  max_positions: 6  # 个人
+  min_positions: null
+  max_per_sector: null  # 书中未明示
+  correlation_cap: null  # 书中未明示
+  drawdown_circuit_breaker: null  # 用 Market Pulse + distribution days + cash 代理
+  market_direction_required: confirmed_uptrend
+  breadth_check: "≥10-15 只 setup 才认为市场广度足够(p.107)"
+
+execution:
+  fill: next_open  # 默认次日开盘
+  order_types: [buy_stop, market_order, sell_trigger]  # 案例中都用过(p.68-69, 81-82)
+  slippage_bps: null  # 书中未明示
+  commission_bps: null  # 个人交易者忽略
+  tools_required:
+    - IBD 报纸 / eIBD / Big Picture / Market Pulse
+    - IBD 50 / Stocks on the Move / Stock Checkup
+    - MarketSmith / Leaderboard / Sector Leaders
+    - Stock Charts(daily + weekly + monthly)(p.26-27, 30, 36, 39-40, 64, 101, 121, 126, 136, 181-194)
+  reduce_intraday_noise: true  # 不看 5 分钟图,收盘决策(p.52-53)
+
+assumptions:
+  - "US equity 市场,IBD/MarketSmith 数据订阅"
+  - "持仓周期 5-13 周(普通胜利)至 12-18 个月(大赢家)(p.77, 92, 135-136)"
+  - "所有 base pattern 识别需人工看图(回测无法直接计算)"
+  - "A/D Rating / Industry leadership 需 IBD 数据或代理"
+  - "案例级加仓比例(Dave +25%、Jeff ×5)是个案,非常规"
+
+fidelity_risks_high:
+  - "base_pattern_detection: cup-with-handle / double bottom / flat base / high tight flag 不可直接计算;three-weeks-tight 可代理(15 日 close range <1%),其余必须人工看图(p.25-27)"
+  - "A/D_Rating: IBD 专有指标,需 UpDownVolRatio > 1.2 代理(p.140, 147)"
+  - "industry_leadership: 行业排名/RS 阈值未给硬数,需人工判断(p.42, 174, 181, 193)"
+  - "buyable_gap_up: 需事件检测 + 基本面协同验证,无法纯靠量价(p.148-149)"
+  - "climax_top_detection: 顶部判断需经验,回测版会系统性低估大顶(p.105, 138)"
+  - "sleep_test: 主观降仓触发,无法编码(p.143)"
