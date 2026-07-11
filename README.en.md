@@ -7,7 +7,7 @@
 A Claude Code skill suite · `PDF → human strategy → structured spec → backtest`
 
 <p>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/lilechen/research-to-backtest?style=flat-square" alt="License: MIT"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/lilechen/research-to-backtest?style=flat-square&label=License" alt="License: MIT"/></a>
   <a href="https://github.com/lilechen/research-to-backtest/stargazers"><img src="https://img.shields.io/github/stars/lilechen/research-to-backtest?style=flat-square" alt="Stars"/></a>
   <a href="https://github.com/lilechen/research-to-backtest/issues"><img src="https://img.shields.io/github/issues/lilechen/research-to-backtest?style=flat-square" alt="Issues"/></a>
   <a href="https://github.com/lilechen/research-to-backtest/commits/main"><img src="https://img.shields.io/github/last-commit/lilechen/research-to-backtest?style=flat-square" alt="Last Commit"/></a>
