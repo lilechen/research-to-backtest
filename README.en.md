@@ -14,30 +14,30 @@ A Claude Code skill suite · `PDF → human strategy → structured spec → bac
   <a href="https://github.com/lilechen/research-to-backtest/tree/main/skills"><img src="https://img.shields.io/badge/Claude%20Code-Skills-blueviolet?style=flat-square" alt="Claude Code Skills"/></a>
 </p>
 
-[中文](README.md) · [Examples](#-examples) · [Install](#-quick-start) · [Contributing](#-contributing)
+[中文](README.md) · [Examples](#examples) · [Install](#quick-start) · [Contributing](#contributing)
 
 </div>
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [🎯 The Problem](#-the-problem)
-- [✨ What It Does](#-what-it-does)
-- [🏗 Pipeline](#-pipeline)
-- [⚡ Quick Start](#-quick-start)
-- [📚 Examples](#-examples)
-- [🎓 Design Principles](#-design-principles)
-- [🔬 How It Works](#-how-it-works)
-- [🚧 Roadmap](#-roadmap)
-- [🤝 Contributing](#-contributing)
-- [🧪 Testing](#-testing)
-- [📄 License](#-license)
-- [🙏 Acknowledgments](#-acknowledgments)
+- [The Problem](#the-problem)
+- [What It Does](#what-it-does)
+- [Pipeline](#pipeline)
+- [Quick Start](#quick-start)
+- [Examples](#examples)
+- [Design Principles](#design-principles)
+- [How It Works](#how-it-works)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Testing](#testing)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
-## 🎯 The Problem
+## The Problem
 
 Trading books describe methods with **judgment words** — "RS improving", "MA flattening", "breaks resistance", "head-and-shoulders". Humans understand them; backtest engines don't.
 
@@ -45,7 +45,7 @@ If you backtest a book's method directly, you're actually backtesting an *operat
 
 **The problem isn't lack of backtest power — it's the missing intermediate artifact that separates "human-readable judgment" from "machine-computable predicate", and honestly records every translation in between.**
 
-## ✨ What It Does
+## What It Does
 
 A three-stage Claude Code skill suite that turns a book or paper PDF into something you can both **trade by hand** and **backtest mechanically**:
 
@@ -57,7 +57,7 @@ A three-stage Claude Code skill suite that turns a book or paper PDF into someth
 
 Non-computable elements (head-and-shoulders, trendlines, round-number psychology) are honestly **excluded and logged**, never force-coded.
 
-## 🏗 Pipeline
+## Pipeline
 
 ```
    ┌─────────┐    ┌──────────────────┐    ┌─────────────────────┐    ┌──────────┐
@@ -75,7 +75,7 @@ Non-computable elements (head-and-shoulders, trendlines, round-number psychology
 
 **Why two stages?** Because **you're backtesting an operationalization, not the original method**. Without knowing how the operationalization was done, the backtest results have no meaning for you. The operationalization log is the soul of this project.
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -112,9 +112,9 @@ $specify-backtest
 - Stage 1 → `<name>.trading-system.md` (placed next to PDF or in `examples/<book>/`)
 - Stage 2 → `<name>.system-spec.yaml` + `<name>.operationalization-log.md`
 
-⚠️ After Stage 2, **always review the "high-risk" rows in the log** — these are where the backtest deviates most from the original method.
+**Always review the "high-risk" rows in the log** — these are where the backtest deviates most from the original method.
 
-## 📚 Examples
+## Examples
 
 `examples/` is organized as one folder per book, covering two contrasting document styles:
 
@@ -125,7 +125,7 @@ $specify-backtest
 
 When extracting a new document, drop its artifacts into `examples/<book-name>/`.
 
-## 🎓 Design Principles
+## Design Principles
 
 1. **Human-readable first.** Stage 1 keeps judgment words. A person can sit down and trade it, knowing which parts are judgment.
 2. **The operationalization log is the soul.** Stage 2 records every "book wording → predicate" mapping with fidelity risk (low / medium / high). **A spec without a log is not trustworthy.**
@@ -133,14 +133,14 @@ When extracting a new document, drop its artifacts into `examples/<book-name>/`.
 4. **Framework-agnostic YAML.** Uses generic operators (SMA, slope, rolling_max, ratio, ATR). Any backtest engine can consume it.
 5. **Original numbers preserved verbatim.** Every key rule cites a PDF page, for human cross-checking.
 
-## 🔬 How It Works
+## How It Works
 
 ### Repository Layout
 
 ```
 research-to-backtest/
 ├── skills/
-│   ├── extract-trading-system/        ← Stage 1: PDF → human strategy
+│   ├── extract-trading-system/        Stage 1: PDF → human strategy
 │   │   ├── SKILL.md
 │   │   ├── references/
 │   │   │   ├── system-template.md           (13-section template)
@@ -149,14 +149,14 @@ research-to-backtest/
 │   │   │   ├── long-pdf-reading.md          (long-PDF parallel protocol)
 │   │   │   └── extract-and-chunk.py         (pdftotext chunking helper)
 │   │   └── agents/openai.yaml
-│   ├── specify-backtest/               ← Stage 2: strategy → YAML + log
+│   ├── specify-backtest/               Stage 2: strategy → YAML + log
 │   │   ├── SKILL.md
 │   │   ├── references/
 │   │   │   ├── spec-schema.yaml
 │   │   │   ├── operationalization-guide.md
 │   │   │   └── critic-prompt.md             (adversarial checker)
 │   │   └── agents/openai.yaml
-│   └── run-backtest/                   ← Stage 3: spec → backtest (TBD)
+│   └── run-backtest/                   Stage 3: spec → backtest (TBD)
 ├── examples/
 │   ├── Weinstein/                      (3 files: trading-system + spec + log)
 │   └── Clenow/                         (1 file: trading-system)
@@ -184,7 +184,7 @@ PDF → mdls / pdfinfo to get page count
 - **Text-only models** (e.g., glm family): auto-fallback to `pdftotext` extraction + readers consume `.txt` files (with `=== PAGE N ===` markers).
 - **Detection signal**: if a probe read returns `Model only support text input`, switch to the text-fallback path. Only re-run the failed reader, not all.
 
-## 🚧 Roadmap
+## Roadmap
 
 | Stage | Skill | Status | Notes |
 |---|---|---|---|
@@ -192,7 +192,7 @@ PDF → mdls / pdfinfo to get page count
 | 2 | `specify-backtest` | ✅ v1 | Framework-agnostic YAML + operationalization log + critic check |
 | 3 | `run-backtest` (akquant) | ⏳ Planned | Target: Rust-Python quant framework, generate backtest code from YAML |
 
-## 🤝 Contributing
+## Contributing
 
 Issues and PRs welcome.
 
@@ -205,7 +205,7 @@ Issues and PRs welcome.
 
 Filing issues for bugs / improvements / new-skill ideas is also welcome.
 
-## 🧪 Testing
+## Testing
 
 Each skill ships with reference docs that serve as lightweight integration tests. To verify manually:
 
@@ -218,22 +218,16 @@ $extract-trading-system
 
 CI + automated diff comparison: planned.
 
-## 📄 License
+## License
 
 MIT — see [LICENSE](LICENSE).
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Design inspired by Robert Carver's *Systematic Trading* and its emphasis on backtest fidelity
-- The "operationalization log" framing is original to this project; if you find it useful, a ⭐ helps others discover it
+- The "operationalization log" framing is original to this project; if you find it useful, a star helps others discover it
 - Document processing powered by [poppler](https://poppler.freedesktop.org/)'s `pdftotext`
 
 ---
 
-<div align="center">
-
-**[⬆ Back to top](#research-to-backtest)**
-
 Made for traders who actually read the books.
-
-</div>
