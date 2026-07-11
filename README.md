@@ -55,11 +55,20 @@ $specify-backtest
 
 ## 示例
 
-`examples/` 下有从 Stan Weinstein《Secrets for Profiting in Bull and Bear Markets》生成的完整示例(三份文件),可作为参考。
+`examples/` 下两份完整示例,覆盖两种典型文献风格:
+
+| 文献 | 类型 | 特点 |
+|---|---|---|
+| Stan Weinstein《Secrets for Profiting in Bull and Bear Markets》 | book | 经典阶段分析 + 大量视觉判据 + 形态工具 |
+| Andreas F. Clenow《Following the Trend》 | book | 全定量 CTA 趋势跟踪 + 大量参数表与回测数字 |
+
+Weinstein 示例含三份文件(系统文档 + 系统规格 yaml + 操作化日志),演示完整三阶段管线。Clenow 仅有阶段 1 产物(系统文档),可作为风格对照。
 
 ## 设计要点
 
-- 长 PDF(>80 页)自动并行分段精读再合成。
+- 长 PDF(>80 页)自动并行分段精读再合成(默认 ~60 页/reader,可调)。
+- 纯文本模型下用 `pdftotext` 提取文本后让 reader 读 `.txt`(附 `extract-and-chunk.py` 脚本)。
+- reader 笔记与最终合成由独立的 synthesizer agent 完成,主对话不做合成长 Write。
 - 原话数字原样保留,关键判据标页码。
 - 书中明确 vs 推断严格区分。
 - 缺口诚实记录,不编造。

@@ -55,11 +55,20 @@ Stage 2 produces `<name>.系统规格.yaml` + `<name>.操作化日志.md`. Revie
 
 ## Example
 
-`examples/` contains a full example generated from Stan Weinstein's *Secrets for Profiting in Bull and Bear Markets* (three files), for reference.
+`examples/` contains two complete examples covering different document styles:
+
+| Document | Type | Style |
+|---|---|---|
+| Stan Weinstein, *Secrets for Profiting in Bull and Bear Markets* | book | Classic stage analysis + visual judgment criteria + chart patterns |
+| Andreas F. Clenow, *Following the Trend* | book | Fully quantitative CTA trend-following + parameter tables + backtest numbers |
+
+The Weinstein example ships three files (strategy doc + spec YAML + operationalization log), demonstrating the full three-stage pipeline. Clenow ships only the Stage-1 artifact (strategy doc) as a style contrast.
 
 ## Design notes
 
-- Long PDFs (>80 pages) are read in parallel chunks then synthesized.
+- Long PDFs (>80 pages) are read in parallel chunks then synthesized (default ~60 pages per reader, tunable).
+- Text-only models use `pdftotext` extraction (`extract-and-chunk.py` script provided) so readers consume `.txt` files with `=== PAGE N ===` markers instead of rendering PDF pages.
+- Reader notes and final synthesis are delegated to dedicated sub-agents — the main conversation never does the long synthesis write.
 - Original numbers and wording are preserved verbatim; key criteria cite page numbers.
 - "Explicit in the book" vs "inferred" are strictly distinguished.
 - Gaps are recorded honestly, never fabricated.

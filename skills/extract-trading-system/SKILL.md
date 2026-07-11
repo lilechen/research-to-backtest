@@ -18,11 +18,17 @@ description: 从一本交易书或一篇 paper 的 PDF 中,抽取一个完整、
 
 ## 工作流
 
-1. 用 `mdls -name kMDItemNumberOfPages` 查 PDF 页数。
-2. 若页数 ≤ 80,单次精读即可;若 > 80,按 `references/long-pdf-reading.md` 并行 fan-out 多个 reader,每个 reader 读一段,按 `references/reader-prompt.md` 抽取并映射到 13 节,保留数字/页码/原话。
-3. 合成所有 reader 的笔记,按 `references/system-template.md` 的 13 节组织。
-4. 做缺口分析:逐节检查"这条规则是否无歧义、人可执行";做不到的进第 12 节。
-5. 写出 `<书名或论文简称>.交易系统.md`,放在与 PDF 同目录或用户指定目录。
+1. 用 `mdls -name kMDItemNumberOfPages`(或 `pdfinfo`)查 PDF 页数。
+2. 若页数 ≤ 80,单次精读即可;若 > 80,按 `references/long-pdf-reading.md` 并行 fan-out 多个 reader:
+   - **分块默认 ~60 页/reader**(适配多种模型)。可放宽到 ~110 若模型稳定。
+   - **读法二选一**:模型支持图像输入时,reader 用 Read 的 `pages` 参数视觉读 PDF;模型只支持文本时(试读报 `Model only support text input`),用 `references/extract-and-chunk.py` 把 PDF 按页段切成带 `=== PAGE N ===` 标记的 `.txt`,reader 读文本文件。
+   - **笔记写文件**:reader 用 Write 把笔记写入 `/tmp/<书名>_notes_p<段>.md`,只返回一句确认(长笔记作消息返回会被截断)。
+3. **所有 reader 返回后,启动 1 个 synthesizer agent**(见 `references/synthesizer-prompt.md`):
+   - 替换占位符:`{{NOTES_GLOB}}` = `/tmp/<书名>_notes_p*.md`、`{{OUTPUT_PATH}}` = 最终文档路径、`{{EXAMPLE_PATHS}}` = `examples/Weinstein.交易系统.md` + `examples/Clenow.交易系统.md`(风格对齐)
+   - synthesizer 读全部笔记 → 按 `references/system-template.md` 的 13 节合并去重 → 用 Write 写到 `{{OUTPUT_PATH}}` → 返回一句确认
+   - **主对话不做合成长 Write**,避免 quota / context 风险。
+4. synthesizer 返回后,做一次完整性检查:13 节是否都有内容?关键规则是否都带页码?若有缺口,标 `⚠️ 待补` 让用户复审。
+5. 告诉用户文档路径与要点摘要(2-4 句)。
 
 ## 输出约束
 
@@ -38,3 +44,11 @@ description: 从一本交易书或一篇 paper 的 PDF 中,抽取一个完整、
 抽取分段笔记时,读取 `references/reader-prompt.md`。
 组织最终输出时,读取 `references/system-template.md`。
 处理长 PDF(>80 页)时,读取 `references/long-pdf-reading.md`。
+合成步骤用 synthesizer agent,读取 `references/synthesizer-prompt.md`。
+PDF 文本提取脚本(纯文本模型用):`references/extract-and-chunk.py`。
+
+## 风格参考
+
+最终输出的密度、标记规范、案例格式参考 `examples/` 下已有文档:
+- `examples/Weinstein.交易系统.md`——经典趋势/形态系统的抽取范例
+- `examples/Clenow.交易系统.md`——全定量、含大量参数表的量化趋势系统的抽取范例
