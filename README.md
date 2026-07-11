@@ -55,14 +55,14 @@ $specify-backtest
 
 ## 示例
 
-`examples/` 下两份完整示例,覆盖两种典型文献风格:
+`examples/` 下每本书一个子文件夹,各文献独立。覆盖两种典型文献风格:
 
-| 文献 | 类型 | 特点 |
-|---|---|---|
-| Stan Weinstein《Secrets for Profiting in Bull and Bear Markets》 | book | 经典阶段分析 + 大量视觉判据 + 形态工具 |
-| Andreas F. Clenow《Following the Trend》 | book | 全定量 CTA 趋势跟踪 + 大量参数表与回测数字 |
+| 文件夹 | 文献 | 类型 | 含文件 | 演示 |
+|---|---|---|---|---|
+| `Weinstein/` | Stan Weinstein《Secrets for Profiting in Bull and Bear Markets》 | book | 3 份:系统文档 + 系统规格 yaml + 操作化日志 | 完整三阶段管线 |
+| `Clenow/` | Andreas F. Clenow《Following the Trend》 | book | 1 份:系统文档 | 阶段 1(量化趋势跟踪风格) |
 
-Weinstein 示例含三份文件(系统文档 + 系统规格 yaml + 操作化日志),演示完整三阶段管线。Clenow 仅有阶段 1 产物(系统文档),可作为风格对照。
+跑新文献时,在 `examples/<书名>/` 下放对应的三份产物(若已跑阶段 2)。
 
 ## 设计要点
 

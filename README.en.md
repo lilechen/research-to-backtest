@@ -55,14 +55,14 @@ Stage 2 produces `<name>.系统规格.yaml` + `<name>.操作化日志.md`. Revie
 
 ## Example
 
-`examples/` contains two complete examples covering different document styles:
+`examples/` is organized as one folder per book, each containing that book's artifacts. Two complete examples covering different document styles:
 
-| Document | Type | Style |
-|---|---|---|
-| Stan Weinstein, *Secrets for Profiting in Bull and Bear Markets* | book | Classic stage analysis + visual judgment criteria + chart patterns |
-| Andreas F. Clenow, *Following the Trend* | book | Fully quantitative CTA trend-following + parameter tables + backtest numbers |
+| Folder | Document | Type | Files | Demonstrates |
+|---|---|---|---|---|
+| `Weinstein/` | Stan Weinstein, *Secrets for Profiting in Bull and Bear Markets* | book | 3: strategy doc + spec YAML + operationalization log | Full three-stage pipeline |
+| `Clenow/` | Andreas F. Clenow, *Following the Trend* | book | 1: strategy doc | Stage 1 (quantitative trend-following style) |
 
-The Weinstein example ships three files (strategy doc + spec YAML + operationalization log), demonstrating the full three-stage pipeline. Clenow ships only the Stage-1 artifact (strategy doc) as a style contrast.
+When extracting a new document, drop its artifacts into `examples/<book-name>/`.
 
 ## Design notes
 
