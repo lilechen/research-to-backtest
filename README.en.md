@@ -15,8 +15,8 @@ PDF ──► human-readable strategy ──► structured spec ──► backte
 
 | Stage | Skill | Input -> Output | Artifact |
 |---|---|---|---|
-| 1 | `extract-trading-system` ✅ | PDF -> human strategy | `<name>.交易系统.md` |
-| 2 | `specify-backtest` ✅ | strategy.md -> backtestable spec | `<name>.系统规格.yaml` + `<name>.操作化日志.md` |
+| 1 | `extract-trading-system` ✅ | PDF -> human strategy | `<name>.trading-system.md` |
+| 2 | `specify-backtest` ✅ | strategy.md -> backtestable spec | `<name>.system-spec.yaml` + `<name>.operationalization-log.md` |
 | 3 | `run-backtest` ⏳ | spec.yaml -> backtest | akquant code + results |
 
 ## Why two steps
@@ -48,10 +48,10 @@ type: book   # or paper
 
 # Stage 2: convert to a backtestable spec
 $specify-backtest
-strategy: /path/to/<name>.交易系统.md
+strategy: /path/to/<name>.trading-system.md
 ```
 
-Stage 2 produces `<name>.系统规格.yaml` + `<name>.操作化日志.md`. Review the "high-risk" rows in the log; tweak the spec and re-run as needed.
+Stage 2 produces `<name>.system-spec.yaml` + `<name>.operationalization-log.md`. Review the "high-risk" rows in the log; tweak the spec and re-run as needed.
 
 ## Example
 

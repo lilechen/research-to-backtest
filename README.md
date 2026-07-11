@@ -15,9 +15,9 @@ PDF ──► 人读策略 ──► 结构化规格 ──► 回测
 
 | 阶段 | skill | 输入 -> 输出 | 产物 |
 |---|---|---|---|
-| 1 | `extract-trading-system` ✅ | PDF -> 人读策略 | `<名>.交易系统.md` |
-| 2 | `specify-backtest` ✅ | 策略.md -> 可回测规格 | `<名>.系统规格.yaml` + `<名>.操作化日志.md` |
-| 3 | `run-backtest` ⏳ | 规格.yaml -> 回测 | akquant 代码 + 回测结果 |
+| 1 | `extract-trading-system` ✅ | PDF -> 人读策略 | `<name>.trading-system.md` |
+| 2 | `specify-backtest` ✅ | strategy.md -> backtestable spec | `<name>.system-spec.yaml` + `<name>.operationalization-log.md` |
+| 3 | `run-backtest` ⏳ | spec.yaml -> backtest | akquant code + results |
 
 ## 为什么分两步
 
@@ -48,10 +48,10 @@ PDF: /path/to/book.pdf
 
 # 阶段 2:转可回测规格
 $specify-backtest
-策略: /path/to/<名>.交易系统.md
+策略: /path/to/<name>.trading-system.md
 ```
 
-阶段 2 产出 `<名>.系统规格.yaml` + `<名>.操作化日志.md`。审日志里"高风险"行,按需改规格后重跑。
+阶段 2 产出 `<name>.system-spec.yaml` + `<name>.operationalization-log.md`。审日志里"高风险"行,按需改规格后重跑。
 
 ## 示例
 

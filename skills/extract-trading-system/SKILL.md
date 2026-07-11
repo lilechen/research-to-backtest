@@ -24,7 +24,7 @@ description: 从一本交易书或一篇 paper 的 PDF 中,抽取一个完整、
    - **读法二选一**:模型支持图像输入时,reader 用 Read 的 `pages` 参数视觉读 PDF;模型只支持文本时(试读报 `Model only support text input`),用 `references/extract-and-chunk.py` 把 PDF 按页段切成带 `=== PAGE N ===` 标记的 `.txt`,reader 读文本文件。
    - **笔记写文件**:reader 用 Write 把笔记写入 `/tmp/<书名>_notes_p<段>.md`,只返回一句确认(长笔记作消息返回会被截断)。
 3. **所有 reader 返回后,启动 1 个 synthesizer agent**(见 `references/synthesizer-prompt.md`):
-   - 替换占位符:`{{NOTES_GLOB}}` = `/tmp/<书名>_notes_p*.md`、`{{OUTPUT_PATH}}` = 最终文档路径、`{{EXAMPLE_PATHS}}` = `examples/Weinstein.交易系统.md` + `examples/Clenow.交易系统.md`(风格对齐)
+   - 替换占位符:`{{NOTES_GLOB}}` = `/tmp/<book>_notes_p*.md`、`{{OUTPUT_PATH}}` = 最终文档路径、`{{EXAMPLE_PATHS}}` = `examples/Weinstein/Weinstein.trading-system.md` + `examples/Clenow/Clenow.trading-system.md`(风格对齐)
    - synthesizer 读全部笔记 → 按 `references/system-template.md` 的 13 节合并去重 → 用 Write 写到 `{{OUTPUT_PATH}}` → 返回一句确认
    - **主对话不做合成长 Write**,避免 quota / context 风险。
 4. synthesizer 返回后,做一次完整性检查:13 节是否都有内容?关键规则是否都带页码?若有缺口,标 `⚠️ 待补` 让用户复审。
@@ -32,7 +32,7 @@ description: 从一本交易书或一篇 paper 的 PDF 中,抽取一个完整、
 
 ## 输出约束
 
-- 输出文件名:`<简称>.交易系统.md`。
+- 输出文件名:`<name>.trading-system.md`。
 - 严格按 13 节模板,不得增减顶级章节。
 - 凡具体数字(如「30 周均线」「2% 风险」)原样引用。
 - 关键判据尽量给章节/页码定位。
@@ -50,5 +50,5 @@ PDF 文本提取脚本(纯文本模型用):`references/extract-and-chunk.py`。
 ## 风格参考
 
 最终输出的密度、标记规范、案例格式参考 `examples/` 下已有文档:
-- `examples/Weinstein.交易系统.md`——经典趋势/形态系统的抽取范例
-- `examples/Clenow.交易系统.md`——全定量、含大量参数表的量化趋势系统的抽取范例
+- `examples/Weinstein/Weinstein.trading-system.md`——经典趋势/形态系统的抽取范例
+- `examples/Clenow/Clenow.trading-system.md`——全定量、含大量参数表的量化趋势系统的抽取范例

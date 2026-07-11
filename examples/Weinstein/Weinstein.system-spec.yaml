@@ -1,10 +1,10 @@
 # Weinstein 阶段分析系统 - 可回测规格(框架无关)
-# 由 specify-backtest skill 生成(示例)。配套见 Weinstein.操作化日志.md。
+# 由 specify-backtest skill 生成(示例)。配套见 Weinstein.operationalization-log.md。
 # 这是"简化版 Weinstein":排除了头肩底/双底/三重确认/趋势线/整数心理等不可计算元素。
 
 system:
   name: Weinstein-Stage2-Long
-  source: Weinstein.交易系统.md
+  source: Weinstein.trading-system.md
   source_type: book
   timeframe: weekly   # 周五收盘
 

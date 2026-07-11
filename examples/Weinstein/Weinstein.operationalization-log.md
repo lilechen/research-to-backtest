@@ -1,7 +1,7 @@
 # Weinstein 操作化日志
 
-策略来源:Weinstein.交易系统.md
-规格:Weinstein.系统规格.yaml
+策略来源:Weinstein.trading-system.md
+规格:Weinstein.system-spec.yaml
 
 回测的是"操作化版 Weinstein",不是原方法。下表逐条记录翻译与保真度风险。**高风险行需审阅确认。**
 

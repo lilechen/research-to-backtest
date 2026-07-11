@@ -471,5 +471,5 @@ Contracts = (0.0015 × Equity) / (ATR20 × PointValue)
   - Reader 2:PDF p.114-226 完整 13 节笔记(Ch.5-6 绩效归因 + 2002-2017 逐年回顾)
   - Reader 3:PDF p.227-339 部分笔记(sections 1-2 + section 3 前半;Ch.7-14 变体部分)
 - **未读**:PDF p.227-339 完整文本(变体系统规则未完整抽取,见 §12-B)
-- **风格对齐**:参考 `research-to-backtest/examples/Weinstein.交易系统.md` 的密度、内联页码 (p.X)、「推断」/「书中未明确」/「排除」标记、案例带数字。
+- **风格对齐**:参考 `research-to-backtest/examples/Weinstein/Weinstein.trading-system.md` 的密度、内联页码 (p.X)、「推断」/「书中未明确」/「排除」标记、案例带数字。
 - **替代的前 PARTIAL 版本**:曾因 quota 中断生成,核心规则标"待补";本次完整版已覆盖所有 ⏳ 缺口,版本应替换使用。
