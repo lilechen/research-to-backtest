@@ -25,10 +25,16 @@ description: 从一本交易书或一篇 paper 的 PDF 中,抽取一个完整、
    - **笔记写文件**:reader 用 Write 把笔记写入 `/tmp/<书名>_notes_p<段>.md`,只返回一句确认(长笔记作消息返回会被截断)。
 3. **所有 reader 返回后,启动 1 个 synthesizer agent**(见 `references/synthesizer-prompt.md`):
    - 替换占位符:`{{NOTES_GLOB}}` = `/tmp/<book>_notes_p*.md`、`{{OUTPUT_PATH}}` = 最终文档路径、`{{EXAMPLE_PATHS}}` = `examples/Weinstein/Weinstein.trading-system.md` + `examples/Clenow/Clenow.trading-system.md`(风格对齐)
-   - synthesizer 读全部笔记 → 按 `references/system-template.md` 的 13 节合并去重 → 用 Write 写到 `{{OUTPUT_PATH}}` → 返回一句确认
+   - **synthesizer 用分批 Write+Edit 模式**(骨架 Write + 13 节 + 附录的逐节 Edit,见 synthesizer-prompt.md),避免一次 Write 32k 字
+   - synthesizer 读全部笔记 → 按 `references/system-template.md` 的 13 节合并去重 → 写文件 → 返回一句确认
    - **主对话不做合成长 Write**,避免 quota / context 风险。
-4. synthesizer 返回后,做一次完整性检查:13 节是否都有内容?关键规则是否都带页码?若有缺口,标 `⚠️ 待补` 让用户复审。
-5. 告诉用户文档路径与要点摘要(2-4 句)。
+4. **synthesizer 完成后,启动 1 个 critic agent**(见 `references/critic-prompt.md`):
+   - 读合成文档 + 对照模板
+   - 检查 13 节结构、页码引用、标记规范、数字保真、人交易视角、缺口诚实、元数据
+   - 输出 PASS / PASS_WITH_WARN / FAIL 报告
+   - **失败必须重新跑 synthesizer**(调整后重跑),不能跳过
+5. critic 通过后,告诉用户文档路径与要点摘要(2-4 句)。
+6. 更新仓库根目录 `STATUS.md`,标记该书的 Stage 1 状态为 ✅。
 
 ## 输出约束
 
@@ -45,7 +51,10 @@ description: 从一本交易书或一篇 paper 的 PDF 中,抽取一个完整、
 组织最终输出时,读取 `references/system-template.md`。
 处理长 PDF(>80 页)时,读取 `references/long-pdf-reading.md`。
 合成步骤用 synthesizer agent,读取 `references/synthesizer-prompt.md`。
+合成后质量检查用 critic agent,读取 `references/critic-prompt.md`。
 PDF 文本提取脚本(纯文本模型用):`references/extract-and-chunk.py`。
+
+整体进度跟踪见仓库根目录 `STATUS.md`。
 
 ## 风格参考
 
